@@ -1,4 +1,3 @@
-
 import random
 import math
 import matplotlib.pyplot as plt
@@ -6,7 +5,7 @@ import matplotlib.pyplot as plt
 
 #lightAmount is the amount of light particles you want to spawn in
 #stepAmount is how long you want to draw the light particle
-lightAmount = 70
+lightAmount = 40
 stepAmount = 15001
 
 
@@ -24,7 +23,9 @@ xintersect = 0
 coarse = 0 * 10 **-5
 ocularCounter = 0
 ocularHeightBottom = 10
-ocularHeightTop = 10.8
+ocularHeightTop = 11.5
+ocularRefraction = 1.4
+airRefraction = 1.000293
 
 #globMirrorLength determines the length of the mirror
 globMirrorLength = 4
@@ -198,6 +199,10 @@ def mirrorReflection(ry, mirrorAngle, lightAngle, rx):
 light_beams = initia_light_particles(lightAmount)
 drawMirrorLine()
 
+def refractiveIndex(angle):
+  tAngle = math.radians(90)-(math.radians(180) - angle)
+  nAngle = angle + ((math.asin(airRefraction * math.sin(tAngle)/ocularRefraction)-tAngle))
+  return nAngle
 
 for c in range(0,lightAmount):
   lightBeamsTemp = light_beams[c]
@@ -213,7 +218,7 @@ for c in range(0,lightAmount):
       lightBeamsX = movementPeriodX(lightBeamsX, lightBeamsSpeed, lightBeamsAngle)
       lightBeamsY = movementPeriodY(lightBeamsY, lightBeamsSpeed, lightBeamsAngle)
       if lightBeamsX <= globMirrorx-1 and ocularHeightTop > lightBeamsY > ocularHeightBottom and ocularCounter == 0:
-        lightBeamsAngle = math.radians(180)
+        lightBeamsAngle = refractiveIndex(lightBeamsAngle)
         ocularCounter = 1
     else:
       lightBeamsX = xintersect
