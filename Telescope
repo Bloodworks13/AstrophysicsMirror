@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 #lightAmount is the amount of light particles you want to spawn in
 #stepAmount is how long you want to draw the light particle
 lightAmount = 40
-stepAmount = 15001
+stepAmount = 20001
 
 
 #These lists are necessary for inserting the light
@@ -15,20 +15,23 @@ lightListY = []
 
 
 #Some global properties(globDegrees = starting angle of light)
-globDegrees = -90
-globMirrorx = -1
+globDegrees = -100
+globMirrorx = -0.5
 globMirrory = 0
 globMirrordx = 0.001
 xintersect = 0
 coarse = 0 * 10 **-5
+
+#Ocular Properties
 ocularCounter = 0
-ocularHeightBottom = 10
-ocularHeightTop = 11.5
-ocularRefraction = 5
+ocularHeightBottom = 9
+ocularHeightTop = 11
+plt.plot([globMirrorx-1,globMirrorx-1],[ocularHeightBottom,ocularHeightTop])
+ocularRefraction = 3
 airRefraction = 1.000293
 
 #globMirrorLength determines the length of the mirror
-globMirrorLength = 4
+globMirrorLength = 3
 
 
 #globCounter is used to see if the reflection has already taken place(0 = not reflected, 1 = reflected)
@@ -36,14 +39,14 @@ globCounter = 0
 globCounter2 = 0
 globCounter3 = 0
 globCounter4 = 0
-#plt.gca().set_color_cycle(['blue','red','green']) #Is used to give the graph a specific color #python3.5 only
+plt.gca().set_color_cycle(['blue','red','green']) #Is used to give the graph a specific color #python3.5 only
 
 
 #Function for defining the light particles
 def initia_light_particles (aantal_light_particles):
    list_inita_light_particles=[]
    for p in range(0,aantal_light_particles):
-       light_particle={"x_location":0.01 * p-1,"y_location": 2 ,"angle": math.radians(globDegrees+0.00001),"speed": 0.001}
+       light_particle={"x_location":0,"y_location": 6 ,"angle": math.radians(globDegrees+0.00001+0.44*p),"speed": 0.001}
        list_inita_light_particles.append(light_particle)
    return list_inita_light_particles
 
@@ -64,22 +67,22 @@ def movementPeriodY(y, speed, angle):
 
 #Function for defining the function of the mirror: insert the function for mirror in the yVal variable.
 def mirrorFunction(xVal):
-  yVal = 0.04*(xVal)**2 + (random.random()-0.5) * coarse
+  yVal = 0.06*(xVal)**2 + (random.random()-0.5) * coarse
   return yVal
 
 
 def lensFunction(xVal):
   global xintersect
-  boundaryX1 = -0.3
-  boundaryX2 = 0.9
+  boundaryX1 = globMirrorx-1
+  boundaryX2 = globMirrorx - 1 + globMirrorLength
   if xVal > boundaryX1 and xVal < boundaryX2:
-    y =   -2*xVal + 10
+    y =   -1*xVal + 10
     return y
   return None
 
 
 def lensPlotter():
-  lx = -1.0
+  lx = globMirrorx-1
   dlx = globMirrordx
   plotListX = []
   plotListY = []
@@ -136,7 +139,7 @@ def giveMirrorAngle(xVal):
   
 def giveLensAngle(xVal):
   global globMirrordx
-  if lensFunction(xVal) != None:
+  if lensFunction(xVal) != None and lensFunction(xVal + globMirrordx) != None:
     dLens = lensFunction(xVal + globMirrordx) - lensFunction(xVal)
     nAngle = math.atan(dLens/globMirrordx)
     return nAngle
@@ -235,6 +238,6 @@ for c in range(0,lightAmount):
   del lightListX[:]  
   del lightListY[:]
   
-plt.xlim(-3,2.2)
+plt.xlim(-3,3)
 plt.ylim(0,12)
 plt.show()
