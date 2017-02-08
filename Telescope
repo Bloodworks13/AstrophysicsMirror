@@ -24,7 +24,7 @@ coarse = 0 * 10 **-5
 ocularCounter = 0
 ocularHeightBottom = 10
 ocularHeightTop = 11.5
-ocularRefraction = 1.4
+ocularRefraction = 5
 airRefraction = 1.000293
 
 #globMirrorLength determines the length of the mirror
@@ -201,7 +201,8 @@ drawMirrorLine()
 
 def refractiveIndex(angle):
   tAngle = math.radians(90)-(math.radians(180) - angle)
-  nAngle = angle + ((math.asin(airRefraction * math.sin(tAngle)/ocularRefraction)-tAngle))
+  cAngle = math.radians(90)-(tAngle+math.asin(airRefraction * math.sin(tAngle)/ocularRefraction))
+  nAngle = angle + cAngle
   return nAngle
 
 for c in range(0,lightAmount):
