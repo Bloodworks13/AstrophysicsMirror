@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 #lightAmount is the amount of light particles you want to spawn in
 #stepAmount is how long you want to draw the light particle
-lightAmount = 40
+lightAmount = 80
 stepAmount = 20001
 
 
@@ -15,20 +15,23 @@ lightListY = []
 
 
 #Some global properties(globDegrees = starting angle of light)
-globDegrees = -100
-globMirrorx = -0.5
-globMirrory = 0
-globMirrordx = 0.001
-xintersect = 0
-coarse = 0 * 10 **-5
+globDegrees = -90   #The starting angle of the light
+globMirrorx = -0.5  #The starting x position of the mirror
+globMirrory = 0   #The starting y position of the mirror
+globMirrordx = 0.001   #The stepsize in which the mirror is drawn
+xintersect = 0  #Touching this doesn't change anything but it's important it's here
+
+#Coarse adds roughness to the mirror and steep determines how steep the mirror is.
+coarse = 0 * 10 **-5 #Recommended value = 0.5 * 10 **-5   or  0
+steep = 0.03 #Recommended value = 0.03 but it depends on where you want the focal point
 
 #Ocular Properties
-ocularCounter = 0
-ocularHeightBottom = 9
-ocularHeightTop = 11
+ocularCounter = 0 #Keep it 0
+ocularHeightBottom = 6
+ocularHeightTop = 7
 plt.plot([globMirrorx-1,globMirrorx-1],[ocularHeightBottom,ocularHeightTop])
-ocularRefraction = 3
-airRefraction = 1.000293
+ocularRefraction = 3 #Not implemented
+airRefraction = 1.000293 #Not implemented
 
 #globMirrorLength determines the length of the mirror
 globMirrorLength = 3
@@ -46,7 +49,7 @@ plt.gca().set_color_cycle(['blue','red','green']) #Is used to give the graph a s
 def initia_light_particles (aantal_light_particles):
    list_inita_light_particles=[]
    for p in range(0,aantal_light_particles):
-       light_particle={"x_location":0,"y_location": 6 ,"angle": math.radians(globDegrees+0.00001+0.44*p),"speed": 0.001}
+       light_particle={"x_location":-1 + p * (0.225/8),"y_location": 3 ,"angle": math.radians(globDegrees+0.00001),"speed": 0.001} #speed is the stepsize of the light
        list_inita_light_particles.append(light_particle)
    return list_inita_light_particles
 
@@ -67,32 +70,32 @@ def movementPeriodY(y, speed, angle):
 
 #Function for defining the function of the mirror: insert the function for mirror in the yVal variable.
 def mirrorFunction(xVal):
-  yVal = 0.06*(xVal)**2 + (random.random()-0.5) * coarse
+  yVal = steep*(xVal)**2 + (random.random()-0.5) * coarse
   return yVal
 
 
-def lensFunction(xVal):
+def secondMirrorFunction(xVal):
   global xintersect
   boundaryX1 = globMirrorx-1
   boundaryX2 = globMirrorx - 1 + globMirrorLength
   if xVal > boundaryX1 and xVal < boundaryX2:
-    y =   -1*xVal + 10
+    y =   -1*xVal + 6.5
     return y
   return None
 
 
-def lensPlotter():
+def secondMirrorPlotter():
   lx = globMirrorx-1
   dlx = globMirrordx
   plotListX = []
   plotListY = []
   for l in range (int(round(globMirrorLength/globMirrordx))):
-    if lensFunction(lx) != None:
+    if secondMirrorFunction(lx) != None:
       plotListX.append(lx)
-      plotListY.append(lensFunction(lx))
+      plotListY.append(secondMirrorFunction(lx))
     lx += dlx
   plt.plot(plotListX, plotListY)
-lensPlotter()
+secondMirrorPlotter()
 
 
 #This function makes the mirror visible as a line
@@ -117,7 +120,7 @@ def drawTelescope():
   plotListX = []
   plotListY = []
   density = 0.1
-  height = 12
+  height = 8
   for n in range(round(height/density)):
     if ocularHeightTop <=  n * density or n * density <= ocularHeightBottom:
       plotListX.append(leftBound)
@@ -137,22 +140,22 @@ def giveMirrorAngle(xVal):
   nAngle = math.atan(dMirrory/globMirrordx)
   return nAngle
   
-def giveLensAngle(xVal):
+def giveSecondMirrorAngle(xVal):
   global globMirrordx
-  if lensFunction(xVal) != None and lensFunction(xVal + globMirrordx) != None:
-    dLens = lensFunction(xVal + globMirrordx) - lensFunction(xVal)
-    nAngle = math.atan(dLens/globMirrordx)
+  if secondMirrorFunction(xVal) != None and secondMirrorFunction(xVal + globMirrordx) != None:
+    dY = secondMirrorFunction(xVal + globMirrordx) - secondMirrorFunction(xVal)
+    nAngle = math.atan(dY/globMirrordx)
     return nAngle
   
 
 
-def lensReflection(ry, mirrorAngle, lightAngle, rx):
+def secondMirrorReflection(ry, mirrorAngle, lightAngle, rx):
   global globCounter
   global globCounter2
   global globCounter3
   global xintersect
   global globCounter4
-  if movementPeriodY(lightBeamsY, lightBeamsSpeed, lightBeamsAngle) >= lensFunction(rx) and globCounter3 == 1 and lensFunction(rx) != None:
+  if movementPeriodY(lightBeamsY, lightBeamsSpeed, lightBeamsAngle) >= secondMirrorFunction(rx) and globCounter3 == 1 and secondMirrorFunction(rx) != None:
     la = -math.radians(180) - mirrorAngle
     ra = lightAngle + la
     ba = (math.radians(90)-abs(ra))
@@ -160,14 +163,14 @@ def lensReflection(ry, mirrorAngle, lightAngle, rx):
     globCounter = 1
     a = (movementPeriodY(lightBeamsY, lightBeamsSpeed, lightBeamsAngle)-ry)/(movementPeriodX(lightBeamsX, lightBeamsSpeed, lightBeamsAngle)-rx)
     b = ry - a * rx
-    c = ((lensFunction(rx)-lensFunction(movementPeriodX(lightBeamsX, lightBeamsSpeed, lightBeamsAngle))))/(movementPeriodX(lightBeamsX, lightBeamsSpeed, lightBeamsAngle)-rx)
-    d = lensFunction(rx) - c * rx
+    c = ((secondMirrorFunction(rx)-secondMirrorFunction(movementPeriodX(lightBeamsX, lightBeamsSpeed, lightBeamsAngle))))/(movementPeriodX(lightBeamsX, lightBeamsSpeed, lightBeamsAngle)-rx)
+    d = secondMirrorFunction(rx) - c * rx
     xintersect = movementPeriodX(lightBeamsX, lightBeamsSpeed, lightBeamsAngle)
     globCounter2 = 1
     globCounter3 = 0
     globCounter4 = 1
     return rAngle
-  if movementPeriodY(lightBeamsY, lightBeamsSpeed, lightBeamsAngle) <= lensFunction(rx):
+  if movementPeriodY(lightBeamsY, lightBeamsSpeed, lightBeamsAngle) <= secondMirrorFunction(rx):
     globCounter = 0
     globCounter2 = 0
   return lightAngle
@@ -206,7 +209,7 @@ def refractiveIndex(angle):
   tAngle = math.radians(90)-(math.radians(180) - angle)
   cAngle = math.radians(90)-(tAngle+math.asin(airRefraction * math.sin(tAngle)/ocularRefraction))
   nAngle = angle + cAngle
-  return nAngle
+  return math.radians(180)
 
 for c in range(0,lightAmount):
   lightBeamsTemp = light_beams[c]
@@ -216,8 +219,8 @@ for c in range(0,lightAmount):
   lightBeamsAngle = lightBeamsTemp["angle"]
   for q in range (stepAmount):
     lightBeamsAngle = mirrorReflection(lightBeamsY, giveMirrorAngle(lightBeamsX), lightBeamsAngle,lightBeamsX)
-    if lensFunction(lightBeamsX) != None:
-      lightBeamsAngle = lensReflection(lightBeamsY, giveLensAngle(lightBeamsX), lightBeamsAngle,lightBeamsX)
+    if secondMirrorFunction(lightBeamsX) != None:
+      lightBeamsAngle = secondMirrorReflection(lightBeamsY, giveSecondMirrorAngle(lightBeamsX), lightBeamsAngle,lightBeamsX)
     if globCounter2 == 0 and (lightBeamsX > globMirrorx-1 or ocularHeightTop > lightBeamsY > ocularHeightBottom):
       lightBeamsX = movementPeriodX(lightBeamsX, lightBeamsSpeed, lightBeamsAngle)
       lightBeamsY = movementPeriodY(lightBeamsY, lightBeamsSpeed, lightBeamsAngle)
@@ -227,9 +230,9 @@ for c in range(0,lightAmount):
     else:
       lightBeamsX = xintersect
       lightBeamsY = mirrorFunction(xintersect)
-      if globCounter4 == 1 and lensFunction(xintersect) is not None:
+      if globCounter4 == 1 and secondMirrorFunction(xintersect) is not None:
         lightBeamsX = xintersect
-        lightBeamsY = lensFunction(xintersect)
+        lightBeamsY = secondMirrorFunction(xintersect)
     lightListX.append(lightBeamsX)
     lightListY.append(lightBeamsY)
   globCounter = 0
@@ -239,5 +242,5 @@ for c in range(0,lightAmount):
   del lightListY[:]
   
 plt.xlim(-3,3)
-plt.ylim(0,12)
+plt.ylim(0,8)
 plt.show()
